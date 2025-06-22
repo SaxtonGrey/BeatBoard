@@ -37,34 +37,21 @@ export const useAudioPlayer = () => {
       }));
     };
 
-    const handleLoadStart = () => {
-      console.log("Audio loading started");
-    };
-
-    const handleCanPlay = () => {
-      console.log("Audio can start playing");
-    };
-
     audio.addEventListener("timeupdate", updateTime);
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("error", handleError);
-    audio.addEventListener("loadstart", handleLoadStart);
-    audio.addEventListener("canplay", handleCanPlay);
 
     return () => {
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("error", handleError);
-      audio.removeEventListener("loadstart", handleLoadStart);
-      audio.removeEventListener("canplay", handleCanPlay);
     };
   }, [playbackState.currentSong]);
 
   const playSong = (song: Song) => {
     // Check if the song has a valid preview URL
     if (!song.previewUrl || song.previewUrl.trim() === "") {
-      console.warn(`No preview URL available for "${song.title}" by ${song.artist}`);
-      alert(`Sorry, no preview is available for "${song.title}" by ${song.artist}`);
+      alert(`Sorry, no preview is available for "${song.title}" by ${song.artist}. This is a demo version of the music gallery.`);
       return;
     }
 
@@ -79,14 +66,9 @@ export const useAudioPlayer = () => {
         audio.pause();
         setPlaybackState((prev) => ({ ...prev, isPlaying: false }));
       } else {
-        // Validate the source before playing
-        if (audio.src && audio.src !== song.previewUrl) {
-          audio.src = song.previewUrl;
-        }
-        
         audio.play().catch((error) => {
           console.error("Error playing audio:", error);
-          alert(`Unable to play "${song.title}". The preview may not be available.`);
+          alert(`Unable to play "${song.title}". This may be a demo audio file that's not available.`);
           setPlaybackState((prev) => ({ ...prev, isPlaying: false }));
         });
         
@@ -99,7 +81,7 @@ export const useAudioPlayer = () => {
       
       audio.play().catch((error) => {
         console.error("Error playing new song:", error);
-        alert(`Unable to play "${song.title}". The preview may not be available.`);
+        alert(`Unable to play "${song.title}". This may be a demo audio file that's not available.`);
         setPlaybackState((prev) => ({ 
           ...prev, 
           currentSong: song,

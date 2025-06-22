@@ -91,7 +91,7 @@ export const MusicCard: React.FC<MusicCardProps> = ({
         {!hasPreview && (
           <div className="absolute top-3 left-3">
             <div className="bg-gray-600 text-white text-xs px-2 py-1 rounded-full">
-              No Preview
+              Demo Only
             </div>
           </div>
         )}
