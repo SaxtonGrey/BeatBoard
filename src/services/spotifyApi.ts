@@ -29,30 +29,49 @@ class SpotifyAPI {
     const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
     const clientSecret = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
 
+    // Debug logging to help identify the issue
+    console.log('Environment check:', {
+      clientIdExists: !!clientId,
+      clientSecretExists: !!clientSecret,
+      clientIdLength: clientId?.length || 0,
+      clientSecretLength: clientSecret?.length || 0
+    });
+
     if (!clientId || !clientSecret) {
+      console.error('Missing Spotify credentials:', {
+        VITE_SPOTIFY_CLIENT_ID: clientId ? 'Present' : 'Missing',
+        VITE_SPOTIFY_CLIENT_SECRET: clientSecret ? 'Present' : 'Missing'
+      });
       throw new Error(
-        "Spotify credentials not configured. Please add VITE_SPOTIFY_CLIENT_ID and VITE_SPOTIFY_CLIENT_SECRET to your .env file"
+        "Spotify credentials not configured. Please ensure your .env file contains VITE_SPOTIFY_CLIENT_ID and VITE_SPOTIFY_CLIENT_SECRET"
       );
     }
 
-    const response = await fetch("https://accounts.spotify.com/api/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
-      },
-      body: "grant_type=client_credentials",
-    });
+    try {
+      const response = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${btoa(`${clientId}:${clientSecret}`)}`,
+        },
+        body: "grant_type=client_credentials",
+      });
 
-    if (!response.ok) {
-      throw new Error("Failed to get Spotify access token");
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Spotify token request failed:', response.status, errorText);
+        throw new Error(`Failed to get Spotify access token: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      this.accessToken = data.access_token;
+      this.tokenExpiry = Date.now() + data.expires_in * 1000 - 60000; // Subtract 1 minute for safety
+
+      return this.accessToken;
+    } catch (error) {
+      console.error('Error getting Spotify access token:', error);
+      throw error;
     }
-
-    const data = await response.json();
-    this.accessToken = data.access_token;
-    this.tokenExpiry = Date.now() + data.expires_in * 1000 - 60000; // Subtract 1 minute for safety
-
-    return this.accessToken;
   }
 
   async searchTrack(artist: string, title: string): Promise<string | null> {
@@ -71,7 +90,7 @@ class SpotifyAPI {
 
       if (!response.ok) {
         console.error(
-          "Spotify API error:",
+          "Spotify API search error:",
           response.status,
           response.statusText
         );
