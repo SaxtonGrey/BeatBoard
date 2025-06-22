@@ -12,7 +12,7 @@ export const mockSongs: Song[] = [
     genre: "Pop",
     energy: "high",
     color: "#8B5CF6",
-    // previewUrl:
+    previewUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav", // Demo audio
   },
   {
     id: "2",
@@ -25,6 +25,7 @@ export const mockSongs: Song[] = [
     genre: "Pop",
     energy: "medium",
     color: "#F59E0B",
+    previewUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-04.wav", // Demo audio
   },
   {
     id: "3",
@@ -37,6 +38,7 @@ export const mockSongs: Song[] = [
     genre: "Pop Rock",
     energy: "high",
     color: "#EF4444",
+    previewUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-03.wav", // Demo audio
   },
   {
     id: "4",
@@ -49,6 +51,7 @@ export const mockSongs: Song[] = [
     genre: "Dance Pop",
     energy: "high",
     color: "#06B6D4",
+    previewUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-02.wav", // Demo audio
   },
   {
     id: "5",
@@ -61,6 +64,7 @@ export const mockSongs: Song[] = [
     genre: "Ballad",
     energy: "low",
     color: "#6366F1",
+    previewUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-01.wav", // Demo audio
   },
   {
     id: "6",
@@ -73,6 +77,7 @@ export const mockSongs: Song[] = [
     genre: "Pop",
     energy: "medium",
     color: "#EC4899",
+    // No preview URL - will show as unavailable
   },
   {
     id: "7",
@@ -85,6 +90,7 @@ export const mockSongs: Song[] = [
     genre: "Indie Pop",
     energy: "medium",
     color: "#10B981",
+    // No preview URL - will show as unavailable
   },
   {
     id: "8",
@@ -97,6 +103,7 @@ export const mockSongs: Song[] = [
     genre: "Hip Hop",
     energy: "high",
     color: "#F97316",
+    // No preview URL - will show as unavailable
   },
   {
     id: "9",
@@ -109,6 +116,7 @@ export const mockSongs: Song[] = [
     genre: "R&B",
     energy: "low",
     color: "#84CC16",
+    // No preview URL - will show as unavailable
   },
   {
     id: "10",
@@ -121,5 +129,6 @@ export const mockSongs: Song[] = [
     genre: "Pop Rap",
     energy: "high",
     color: "#A855F7",
+    // No preview URL - will show as unavailable
   },
 ];
