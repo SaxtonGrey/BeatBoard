@@ -1,5 +1,5 @@
 import React from "react";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, AlertCircle } from "lucide-react";
 import type { Song } from "../types/music";
 
 interface MusicCardProps {
@@ -34,6 +34,8 @@ export const MusicCard: React.FC<MusicCardProps> = ({
     onPlay(song);
   };
 
+  const hasPreview = song.previewUrl && song.previewUrl.trim() !== "";
+
   return (
     <div
       className={`
@@ -41,6 +43,7 @@ export const MusicCard: React.FC<MusicCardProps> = ({
         rounded-xl overflow-hidden cursor-pointer transition-all duration-300
         hover:scale-105 hover:shadow-2xl border-2 ${getEnergyStyles()}
         ${isCurrentSong && isPlaying ? "animate-pulse-slow" : ""}
+        ${!hasPreview ? "opacity-75" : ""}
         ${className}
       `}
       onClick={handleClick}
@@ -58,8 +61,12 @@ export const MusicCard: React.FC<MusicCardProps> = ({
 
         {/* Play/Pause Overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <div className="bg-spotify-green rounded-full p-4 transform scale-75 group-hover:scale-100 transition-transform duration-300">
-            {isCurrentSong && isPlaying ? (
+          <div className={`rounded-full p-4 transform scale-75 group-hover:scale-100 transition-transform duration-300 ${
+            hasPreview ? "bg-spotify-green" : "bg-gray-600"
+          }`}>
+            {!hasPreview ? (
+              <AlertCircle className="w-8 h-8 text-white" />
+            ) : isCurrentSong && isPlaying ? (
               <Pause className="w-8 h-8 text-white" />
             ) : (
               <Play className="w-8 h-8 text-white ml-1" />
@@ -79,6 +86,15 @@ export const MusicCard: React.FC<MusicCardProps> = ({
           `}
           />
         </div>
+
+        {/* No Preview Indicator */}
+        {!hasPreview && (
+          <div className="absolute top-3 left-3">
+            <div className="bg-gray-600 text-white text-xs px-2 py-1 rounded-full">
+              No Preview
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Song Info */}
@@ -96,6 +112,11 @@ export const MusicCard: React.FC<MusicCardProps> = ({
             {(song.duration % 60).toString().padStart(2, "0")}
           </span>
         </div>
+        {!hasPreview && (
+          <p className="text-xs text-gray-500 italic">
+            Preview not available
+          </p>
+        )}
       </div>
 
       {/* Playing Indicator */}

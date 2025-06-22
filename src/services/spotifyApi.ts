@@ -29,14 +29,6 @@ class SpotifyAPI {
     const clientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
     const clientSecret = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
 
-    // Debug logging to help identify the issue
-    console.log('Environment check:', {
-      clientIdExists: !!clientId,
-      clientSecretExists: !!clientSecret,
-      clientIdLength: clientId?.length || 0,
-      clientSecretLength: clientSecret?.length || 0
-    });
-
     if (!clientId || !clientSecret) {
       console.error('Missing Spotify credentials:', {
         VITE_SPOTIFY_CLIENT_ID: clientId ? 'Present' : 'Missing',
@@ -100,10 +92,21 @@ class SpotifyAPI {
       const data: SpotifySearchResponse = await response.json();
 
       if (data.tracks.items.length > 0) {
-        return data.tracks.items[0].preview_url || "";
+        const track = data.tracks.items[0];
+        const previewUrl = track.preview_url;
+        
+        // Log the result for debugging
+        console.log(`Search result for "${title}" by ${artist}:`, {
+          found: true,
+          hasPreview: !!previewUrl,
+          previewUrl: previewUrl
+        });
+        
+        return previewUrl;
+      } else {
+        console.log(`No tracks found for "${title}" by ${artist}`);
+        return null;
       }
-
-      return null;
     } catch (error) {
       console.error("Error searching Spotify track:", error);
       return null;
@@ -136,6 +139,11 @@ class SpotifyAPI {
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
+
+    // Log summary of results
+    const withPreviews = Object.values(results).filter(url => url !== null).length;
+    const total = Object.keys(results).length;
+    console.log(`Spotify API Results: ${withPreviews}/${total} tracks have preview URLs`);
 
     return results;
   }
