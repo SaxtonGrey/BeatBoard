@@ -19,7 +19,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  background: linear-gradient(135deg, #121212 0%, #000000 100%);
 }
 
 /* Custom scrollbar */
@@ -37,7 +37,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #1db954;
+  background: #1DB954;
 }
 
 /* Smooth transitions for all interactive elements */
@@ -50,7 +50,7 @@ body {
 button:focus-visible,
 input:focus-visible,
 select:focus-visible {
-  outline: 2px solid #1db954;
+  outline: 2px solid #1DB954;
   outline-offset: 2px;
 }
 
@@ -71,7 +71,7 @@ input[type="range"]::-webkit-slider-track {
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  background: #1db954;
+  background: #1DB954;
   height: 16px;
   width: 16px;
   border-radius: 50%;
@@ -86,10 +86,37 @@ input[type="range"]::-moz-range-track {
 }
 
 input[type="range"]::-moz-range-thumb {
-  background: #1db954;
+  background: #1DB954;
   height: 16px;
   width: 16px;
   border-radius: 50%;
   cursor: pointer;
   border: none;
+}
+
+/* Additional modern styling */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+.backdrop-blur-lg {
+  backdrop-filter: blur(16px);
+}
+
+/* Improved focus styles */
+*:focus-visible {
+  outline: 2px solid #1DB954;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection styling */
+::selection {
+  background-color: #1DB954;
+  color: #000000;
 }

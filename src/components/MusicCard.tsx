@@ -1,5 +1,5 @@
 import React from "react";
-import { Play, Pause, AlertCircle } from "lucide-react";
+import { Play, Pause, AlertCircle, ExternalLink } from "lucide-react";
 import type { Song } from "../types/music";
 
 interface MusicCardProps {
@@ -34,36 +34,44 @@ export const MusicCard: React.FC<MusicCardProps> = ({
     onPlay(song);
   };
 
+  const handleSpotifyLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (song.spotifyUrl) {
+      window.open(song.spotifyUrl, '_blank');
+    }
+  };
+
   const hasPreview = song.previewUrl && song.previewUrl.trim() !== "";
 
   return (
     <div
       className={`
-        group relative bg-gradient-to-br from-gray-900 to-gray-800 
-        rounded-xl overflow-hidden cursor-pointer transition-all duration-300
-        hover:scale-105 hover:shadow-2xl border-2 ${getEnergyStyles()}
+        group relative bg-gradient-to-br from-card-bg to-gray-800 
+        rounded-2xl overflow-hidden cursor-pointer transition-all duration-300
+        hover:scale-[1.02] hover:shadow-2xl border ${getEnergyStyles()}
         ${isCurrentSong && isPlaying ? "animate-pulse-slow" : ""}
         ${!hasPreview ? "opacity-75" : ""}
+        backdrop-blur-sm
         ${className}
       `}
       onClick={handleClick}
       style={{
-        boxShadow: isCurrentSong ? `0 0 30px ${song.color}40` : undefined,
+        boxShadow: isCurrentSong ? `0 0 40px ${song.color}30` : '0 4px 20px rgba(0,0,0,0.3)',
       }}
     >
       {/* Album Art */}
-      <div className="relative aspect-square overflow-hidden">
+      <div className="relative aspect-square overflow-hidden rounded-t-2xl">
         <img
           src={song.albumArt}
           alt={`${song.album} by ${song.artist}`}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
 
         {/* Play/Pause Overlay */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center backdrop-blur-sm">
           <div
-            className={`rounded-full p-4 transform scale-75 group-hover:scale-100 transition-transform duration-300 ${
-              hasPreview ? "bg-spotify-green" : "bg-gray-600"
+            className={`rounded-full p-4 transform scale-75 group-hover:scale-100 transition-all duration-300 shadow-2xl ${
+              hasPreview ? "bg-spotify-green hover:bg-green-400" : "bg-gray-600"
             }`}
           >
             {!hasPreview ? (
@@ -80,7 +88,7 @@ export const MusicCard: React.FC<MusicCardProps> = ({
         <div className="absolute top-3 right-3">
           <div
             className={`
-            w-3 h-3 rounded-full
+            w-3 h-3 rounded-full shadow-lg border-2 border-white/20
             ${song.energy === "high" ? "bg-red-400" : ""}
             ${song.energy === "medium" ? "bg-yellow-400" : ""}
             ${song.energy === "low" ? "bg-blue-400" : ""}
@@ -92,36 +100,47 @@ export const MusicCard: React.FC<MusicCardProps> = ({
         {/* No Preview Indicator */}
         {!hasPreview && (
           <div className="absolute top-3 left-3">
-            <div className="bg-gray-600 text-white text-xs px-2 py-1 rounded-full">
+            <div className="bg-gray-900/80 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full border border-gray-600">
               Demo Only
             </div>
           </div>
         )}
+
+        {/* Spotify Link Button */}
+        {song.spotifyUrl && (
+          <button
+            onClick={handleSpotifyLink}
+            className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm hover:bg-spotify-green/90 text-white hover:text-black p-2 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0"
+            title="Open in Spotify"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Song Info */}
-      <div className="p-4 space-y-2">
-        <h3 className="text-white font-semibold text-lg truncate group-hover:text-spotify-green transition-colors">
+      <div className="p-5 space-y-3">
+        <h3 className="text-white font-bold text-lg truncate group-hover:text-spotify-green transition-colors leading-tight">
           {song.title}
         </h3>
-        <p className="text-gray-400 text-sm truncate">{song.artist}</p>
-        <div className="flex justify-between items-center text-xs text-gray-500">
-          <span className="bg-gray-700 px-2 py-1 rounded-full">
+        <p className="text-gray-400 text-base truncate font-medium">{song.artist}</p>
+        <div className="flex justify-between items-center text-sm text-gray-500">
+          <span className="bg-gray-700/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium">
             {song.genre}
           </span>
-          <span>
+          <span className="font-mono text-xs">
             {Math.floor(song.duration / 60)}:
             {(song.duration % 60).toString().padStart(2, "0")}
           </span>
         </div>
         {!hasPreview && (
-          <p className="text-xs text-gray-500 italic">Preview not available</p>
+          <p className="text-xs text-gray-500 italic font-medium">Preview not available</p>
         )}
       </div>
 
       {/* Playing Indicator */}
       {isCurrentSong && isPlaying && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-spotify-green animate-pulse" />
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-spotify-green to-green-400 animate-pulse shadow-lg" />
       )}
     </div>
   );

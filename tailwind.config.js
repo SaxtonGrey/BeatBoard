@@ -11,6 +11,9 @@ export default {
           gray: "#535353",
           light: "#B3B3B3",
         },
+        // Modern design system colors
+        'card-bg': '#282828',
+        'highlight': '#FF4081',
       },
       animation: {
         "pulse-slow": "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
@@ -27,6 +30,12 @@ export default {
           "0%": { transform: "scale(0.95)", opacity: "0" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
       },
     },
   },

@@ -40,20 +40,20 @@ export const AudioControlBar: React.FC<AudioControlBarProps> = ({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-gray-900 to-black border-t border-gray-700 p-4 animate-fade-in">
+    <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-gray-900/95 to-black/95 backdrop-blur-lg border-t border-gray-700/50 p-4 animate-fade-in shadow-2xl">
       <div className="max-w-7xl mx-auto flex items-center gap-4">
         {/* Song Info */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <img
             src={currentSong.albumArt}
             alt={currentSong.album}
-            className="w-12 h-12 rounded-lg object-cover"
+            className="w-14 h-14 rounded-xl object-cover shadow-lg border border-gray-600"
           />
           <div className="min-w-0">
-            <h4 className="text-white font-medium truncate">
+            <h4 className="text-white font-bold truncate text-base">
               {currentSong.title}
             </h4>
-            <p className="text-gray-400 text-sm truncate">
+            <p className="text-gray-400 text-sm truncate font-medium">
               {currentSong.artist}
             </p>
           </div>
@@ -64,33 +64,33 @@ export const AudioControlBar: React.FC<AudioControlBarProps> = ({
           <div className="flex items-center gap-4">
             <button
               onClick={isPlaying ? onPause : () => onPlay(currentSong)}
-              className="bg-spotify-green hover:bg-green-400 rounded-full p-2 transition-colors"
+              className="bg-spotify-green hover:bg-green-400 rounded-full p-3 transition-all duration-200 transform hover:scale-110 shadow-lg hover:shadow-spotify-green/25"
             >
               {isPlaying ? (
-                <Pause className="w-5 h-5 text-black" />
+                <Pause className="w-6 h-6 text-black" />
               ) : (
-                <Play className="w-5 h-5 text-black ml-0.5" />
+                <Play className="w-6 h-6 text-black ml-0.5" />
               )}
             </button>
           </div>
 
           {/* Progress Bar */}
           <div className="flex items-center gap-2 w-full max-w-md">
-            <span className="text-xs text-gray-400 min-w-[35px]">
+            <span className="text-xs text-gray-400 min-w-[35px] font-mono">
               {formatTime(currentTime)}
             </span>
             <div
-              className="flex-1 h-1 bg-gray-600 rounded-full cursor-pointer group"
+              className="flex-1 h-1.5 bg-gray-600 rounded-full cursor-pointer group"
               onClick={handleProgressClick}
             >
               <div
-                className="h-full bg-spotify-green rounded-full relative group-hover:bg-green-400 transition-colors"
+                className="h-full bg-spotify-green rounded-full relative group-hover:bg-green-400 transition-all duration-200"
                 style={{ width: `${progressPercentage}%` }}
               >
-                <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg" />
               </div>
             </div>
-            <span className="text-xs text-gray-400 min-w-[35px]">
+            <span className="text-xs text-gray-400 min-w-[35px] font-mono">
               {formatTime(currentSong.duration)}
             </span>
           </div>
@@ -100,7 +100,7 @@ export const AudioControlBar: React.FC<AudioControlBarProps> = ({
         <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
           <button
             onClick={() => onVolumeChange(volume > 0 ? 0 : 0.7)}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-800"
           >
             {volume > 0 ? (
               <Volume2 className="w-5 h-5" />
@@ -115,7 +115,7 @@ export const AudioControlBar: React.FC<AudioControlBarProps> = ({
             step="0.01"
             value={volume}
             onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-            className="w-20 accent-spotify-green"
+            className="w-24 accent-spotify-green"
           />
         </div>
       </div>

@@ -9,6 +9,7 @@ export interface Song {
   genre: string;
   energy: 'low' | 'medium' | 'high';
   color: string; // Dominant color from album art
+  spotifyUrl?: string; // Link to Spotify track
 }
 
 export interface PlaybackState {
@@ -16,4 +17,11 @@ export interface PlaybackState {
   currentSong: Song | null;
   currentTime: number;
   volume: number;
+}
+
+export interface User {
+  id: string;
+  displayName: string;
+  email: string;
+  profileImage?: string;
 }
