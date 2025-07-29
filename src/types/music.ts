@@ -4,12 +4,12 @@ export interface Song {
   artist: string;
   album: string;
   albumArt: string;
-  previewUrl?: string;
   duration: number;
   genre: string;
-  energy: 'low' | 'medium' | 'high';
+  energy: "low" | "medium" | "high";
   color: string; // Dominant color from album art
   spotifyUrl?: string; // Link to Spotify track
+  uri: string;
 }
 
 export interface PlaybackState {

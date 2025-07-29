@@ -25,9 +25,6 @@ interface StoredTokens {
 class SpotifyAuthService {
   private readonly STORAGE_KEY = "spotify_tokens";
 
-  /**
-   * Generate a cryptographically secure code verifier for PKCE
-   */
   private generateCodeVerifier(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
@@ -37,9 +34,6 @@ class SpotifyAuthService {
       .replace(/=/g, "");
   }
 
-  /**
-   * Generate code challenge from verifier
-   */
   private async generateCodeChallenge(verifier: string): Promise<string> {
     const encoder = new TextEncoder();
     const data = encoder.encode(verifier);
@@ -50,31 +44,11 @@ class SpotifyAuthService {
       .replace(/=/g, "");
   }
 
-  /**
-   * Initiate Spotify OAuth flow
-   */
   async initiateAuth(): Promise<void> {
-    console.log("🔐 Initiating Spotify auth...");
     const codeVerifier = this.generateCodeVerifier();
     const codeChallenge = await this.generateCodeChallenge(codeVerifier);
 
-    // Store code verifier in multiple places for reliability
-    const storageKey = `spotify_cv_${Date.now()}`;
-    
-    // Try multiple storage methods
-    try {
-      localStorage.setItem(storageKey, codeVerifier);
-      console.log("🔐 Code verifier stored in localStorage with key:", storageKey);
-    } catch (e) {
-      console.warn("🔐 localStorage failed:", e);
-    }
-    
-    try {
-      sessionStorage.setItem(storageKey, codeVerifier);
-      console.log("🔐 Code verifier stored in sessionStorage with key:", storageKey);
-    } catch (e) {
-      console.warn("🔐 sessionStorage failed:", e);
-    }
+    sessionStorage.setItem("spotify_code_verifier", codeVerifier);
 
     const params = new URLSearchParams({
       client_id: SPOTIFY_CONFIG.CLIENT_ID,
@@ -84,61 +58,16 @@ class SpotifyAuthService {
       code_challenge: codeChallenge,
       scope: SPOTIFY_CONFIG.SCOPES,
       show_dialog: "true",
-      state: storageKey, // Pass the storage key as state parameter
     });
-    
+
     const authUrl = `${SPOTIFY_CONFIG.AUTH_URL}?${params.toString()}`;
-    console.log("🔐 Redirecting to:", authUrl);
     window.location.href = authUrl;
   }
 
-  /**
-   * Handle OAuth callback and exchange code for tokens
-   */
   async handleCallback(code: string): Promise<boolean> {
     try {
-      console.log("🔐 Handling OAuth callback with code:", code.substring(0, 10) + "...");
-      
-      // Get the state parameter from URL to find our code verifier
-      const urlParams = new URLSearchParams(window.location.search);
-      const state = urlParams.get("state");
-      console.log("🔐 State parameter from URL:", state);
-      
-      if (!state) {
-        throw new Error("State parameter missing from callback URL");
-      }
-      
-      // Try to get code verifier from multiple storage locations
-      let codeVerifier: string | null = null;
-      
-      // Try localStorage first
-      try {
-        codeVerifier = localStorage.getItem(state);
-        if (codeVerifier) {
-          console.log("🔐 Code verifier found in localStorage");
-        }
-      } catch (e) {
-        console.warn("🔐 localStorage read failed:", e);
-      }
-      
-      // Try sessionStorage as backup
-      if (!codeVerifier) {
-        try {
-          codeVerifier = sessionStorage.getItem(state);
-          if (codeVerifier) {
-            console.log("🔐 Code verifier found in sessionStorage");
-          }
-        } catch (e) {
-          console.warn("🔐 sessionStorage read failed:", e);
-        }
-      }
-      
-      if (!codeVerifier) {
-        console.error("🔐 Code verifier not found in any storage");
-        console.error("🔐 Available localStorage keys:", Object.keys(localStorage));
-        console.error("🔐 Available sessionStorage keys:", Object.keys(sessionStorage));
-        throw new Error("Code verifier not found");
-      }
+      const codeVerifier = sessionStorage.getItem("spotify_code_verifier");
+      if (!codeVerifier) throw new Error("Code verifier not found");
 
       const response = await fetch(SPOTIFY_CONFIG.TOKEN_URL, {
         method: "POST",
@@ -155,39 +84,19 @@ class SpotifyAuthService {
       });
 
       if (!response.ok) {
-        const errorData = await response.text();
-        console.error("Token exchange error:", errorData);
-        throw new Error(`Token exchange failed: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Token exchange failed: ${errorText}`);
       }
 
       const tokens: TokenResponse = await response.json();
       this.storeTokens(tokens);
 
       // Clean up
-      if (state) {
-        try {
-          localStorage.removeItem(state);
-          sessionStorage.removeItem(state);
-          console.log("🔐 Code verifier cleaned up");
-        } catch (e) {
-          console.warn("🔐 Cleanup failed:", e);
-        }
-      }
+      sessionStorage.removeItem("spotify_code_verifier");
 
       return true;
-    } catch (error) {
-      console.error("Error handling OAuth callback:", error);
-      // Clean up on error - try to remove any code verifiers
-      const urlParams = new URLSearchParams(window.location.search);
-      const state = urlParams.get("state");
-      if (state) {
-        try {
-          localStorage.removeItem(state);
-          sessionStorage.removeItem(state);
-        } catch (e) {
-          console.warn("🔐 Error cleanup failed:", e);
-        }
-      }
+    } catch (err) {
+      console.error("Error handling OAuth callback:", err);
       return false;
     }
   }
@@ -203,7 +112,7 @@ class SpotifyAuthService {
       scope: tokens.scope,
     };
 
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(storedTokens));
+    sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify(storedTokens));
   }
 
   /**
@@ -211,7 +120,7 @@ class SpotifyAuthService {
    */
   private getStoredTokens(): StoredTokens | null {
     try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
+      const stored = sessionStorage.getItem(this.STORAGE_KEY);
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
@@ -287,17 +196,12 @@ class SpotifyAuthService {
    * Logout user and clear stored tokens
    */
   logout(): void {
-    localStorage.removeItem(this.STORAGE_KEY);
-    
+    sessionStorage.removeItem(this.STORAGE_KEY);
+
     // Clean up any remaining code verifiers (they start with spotify_cv_)
     try {
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('spotify_cv_')) {
-          localStorage.removeItem(key);
-        }
-      });
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.startsWith('spotify_cv_')) {
+      Object.keys(sessionStorage).forEach((key) => {
+        if (key.startsWith("spotify_cv_")) {
           sessionStorage.removeItem(key);
         }
       });

@@ -91,6 +91,15 @@ export const AuthCallback: React.FC<AuthCallbackProps> = ({
 
         <p className="text-gray-400">{message}</p>
 
+        {status === "error" && (
+          <button
+            className="mt-4 px-4 py-2 bg-spotify-green text-white rounded"
+            onClick={() => spotifyAuth.initiateAuth()}
+          >
+            Retry Login
+          </button>
+        )}
+
         {status === "loading" && (
           <div className="mt-6">
             <div className="w-full bg-gray-700 rounded-full h-2">

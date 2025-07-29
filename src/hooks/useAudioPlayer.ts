@@ -50,7 +50,7 @@ export const useAudioPlayer = () => {
 
   const playSong = (song: Song) => {
     // Check if the song has a valid preview URL
-    if (!song.previewUrl || song.previewUrl.trim() === "") {
+    if (!song.uri || song.uri.trim() === "") {
       alert(
         `Sorry, no preview is available for "${song.title}" by ${song.artist}. This is a demo version of the music gallery.`
       );
@@ -80,7 +80,7 @@ export const useAudioPlayer = () => {
       }
     } else {
       // New song - set source and play
-      audio.src = song.previewUrl;
+      audio.src = song.uri;
       audio.volume = playbackState.volume;
 
       audio.play().catch((error) => {

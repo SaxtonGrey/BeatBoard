@@ -37,26 +37,25 @@ export const MusicCard: React.FC<MusicCardProps> = ({
   const handleSpotifyLink = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (song.spotifyUrl) {
-      window.open(song.spotifyUrl, '_blank');
+      window.open(song.spotifyUrl, "_blank");
     }
   };
-
-  const hasPreview = song.previewUrl && song.previewUrl.trim() !== "";
 
   return (
     <div
       className={`
         group relative bg-gradient-to-br from-card-bg to-gray-800 
         rounded-2xl overflow-hidden cursor-pointer transition-all duration-300
-        hover:scale-[1.02] hover:shadow-2xl border ${getEnergyStyles()}
+        hover:scale-[1.02] border ${getEnergyStyles()}
         ${isCurrentSong && isPlaying ? "animate-pulse-slow" : ""}
-        ${!hasPreview ? "opacity-75" : ""}
         backdrop-blur-sm
         ${className}
       `}
       onClick={handleClick}
       style={{
-        boxShadow: isCurrentSong ? `0 0 40px ${song.color}30` : '0 4px 20px rgba(0,0,0,0.3)',
+        boxShadow: isCurrentSong
+          ? `0 0 40px ${song.color}30`
+          : "0 4px 20px rgba(0,0,0,0.3)",
       }}
     >
       {/* Album Art */}
@@ -70,13 +69,10 @@ export const MusicCard: React.FC<MusicCardProps> = ({
         {/* Play/Pause Overlay */}
         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center backdrop-blur-sm">
           <div
-            className={`rounded-full p-4 transform scale-75 group-hover:scale-100 transition-all duration-300 shadow-2xl ${
-              hasPreview ? "bg-spotify-green hover:bg-green-400" : "bg-gray-600"
-            }`}
+            className={`rounded-full p-4 transform scale-75 group-hover:scale-100 transition-all duration-300 shadow-2xl 
+              bg-spotify-green hover:bg-green-400`}
           >
-            {!hasPreview ? (
-              <AlertCircle className="w-8 h-8 text-white" />
-            ) : isCurrentSong && isPlaying ? (
+            {isCurrentSong && isPlaying ? (
               <Pause className="w-8 h-8 text-white" />
             ) : (
               <Play className="w-8 h-8 text-white ml-1" />
@@ -98,13 +94,6 @@ export const MusicCard: React.FC<MusicCardProps> = ({
         </div>
 
         {/* No Preview Indicator */}
-        {!hasPreview && (
-          <div className="absolute top-3 left-3">
-            <div className="bg-gray-900/80 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full border border-gray-600">
-              Demo Only
-            </div>
-          </div>
-        )}
 
         {/* Spotify Link Button */}
         {song.spotifyUrl && (
@@ -123,7 +112,9 @@ export const MusicCard: React.FC<MusicCardProps> = ({
         <h3 className="text-white font-bold text-lg truncate group-hover:text-spotify-green transition-colors leading-tight">
           {song.title}
         </h3>
-        <p className="text-gray-400 text-base truncate font-medium">{song.artist}</p>
+        <p className="text-gray-400 text-base truncate font-medium">
+          {song.artist}
+        </p>
         <div className="flex justify-between items-center text-sm text-gray-500">
           <span className="bg-gray-700/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium">
             {song.genre}
@@ -133,9 +124,6 @@ export const MusicCard: React.FC<MusicCardProps> = ({
             {(song.duration % 60).toString().padStart(2, "0")}
           </span>
         </div>
-        {!hasPreview && (
-          <p className="text-xs text-gray-500 italic font-medium">Preview not available</p>
-        )}
       </div>
 
       {/* Playing Indicator */}
