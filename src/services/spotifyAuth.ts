@@ -55,11 +55,13 @@ class SpotifyAuthService {
    * Initiate Spotify OAuth flow
    */
   async initiateAuth(): Promise<void> {
+    console.log("🔐 Initiating Spotify auth...");
     this.codeVerifier = this.generateCodeVerifier();
     const codeChallenge = await this.generateCodeChallenge(this.codeVerifier);
 
     // Store code verifier for later use
     localStorage.setItem("spotify_code_verifier", this.codeVerifier);
+    console.log("🔐 Code verifier stored in localStorage");
 
     const params = new URLSearchParams({
       client_id: SPOTIFY_CONFIG.CLIENT_ID,
@@ -70,6 +72,9 @@ class SpotifyAuthService {
       scope: SPOTIFY_CONFIG.SCOPES,
       show_dialog: "true",
     });
+    
+    const authUrl = `${SPOTIFY_CONFIG.AUTH_URL}?${params.toString()}`;
+    console.log("🔐 Redirecting to:", authUrl);
     window.location.href = `${SPOTIFY_CONFIG.AUTH_URL}?${params.toString()}`;
   }
 
@@ -78,8 +83,14 @@ class SpotifyAuthService {
    */
   async handleCallback(code: string): Promise<boolean> {
     try {
-      const codeVerifier = localStorage.getItem("spotify_code_verifier");
-      if (!codeVerifier) {
+      console.log("🔐 Handling OAuth callback with code:", code.substring(0, 10) + "...");
+      
+      // Get code verifier from localStorage (stored during auth initiation)
+      const storedCodeVerifier = localStorage.getItem("spotify_code_verifier");
+      console.log("🔐 Code verifier from localStorage:", storedCodeVerifier ? "Found" : "Not found");
+      
+      if (!storedCodeVerifier) {
+        console.error("🔐 Available localStorage keys:", Object.keys(localStorage));
         throw new Error("Code verifier not found");
       }
 
@@ -93,12 +104,14 @@ class SpotifyAuthService {
           grant_type: "authorization_code",
           code,
           redirect_uri: SPOTIFY_CONFIG.REDIRECT_URI,
-          code_verifier: codeVerifier,
+          code_verifier: storedCodeVerifier,
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`Token exchange failed: ${response.statusText}`);
+        const errorData = await response.text();
+        console.error("Token exchange error:", errorData);
+        throw new Error(`Token exchange failed: ${response.status} ${response.statusText}`);
       }
 
       const tokens: TokenResponse = await response.json();
@@ -111,6 +124,9 @@ class SpotifyAuthService {
       return true;
     } catch (error) {
       console.error("Error handling OAuth callback:", error);
+      // Clean up on error
+      localStorage.removeItem("spotify_code_verifier");
+      this.codeVerifier = null;
       return false;
     }
   }
