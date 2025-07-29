@@ -47,7 +47,7 @@ export const AuthCallback: React.FC<AuthCallbackProps> = ({
           // Redirect after a short delay
           setTimeout(() => {
             onAuthComplete(true);
-            navigate("/App");
+            navigate("/");
           }, 2000);
         } else {
           throw new Error("Failed to exchange authorization code for tokens");

@@ -32,7 +32,7 @@ function App() {
     const checkAuth = async () => {
       try {
         // Check if we're on the callback route
-        if (window.location.pathname === "/callback") {
+        if (window.location.pathname.includes("/callback")) {
           setShowCallback(true);
           setIsLoading(false);
           return;

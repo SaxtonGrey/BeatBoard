@@ -11,7 +11,7 @@
 export const SPOTIFY_CONFIG = {
   CLIENT_ID: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
   CLIENT_SECRET: import.meta.env.VITE_SPOTIFY_CLIENT_SECRET,
-  REDIRECT_URI: import.meta.env.VITE_SPOTIFY_REDIRECT_URI,
+  REDIRECT_URI: import.meta.env.VITE_SPOTIFY_REDIRECT_URI || 'http://localhost:5173/callback',
   SCOPES: [
     'user-read-private',
     'user-read-email',

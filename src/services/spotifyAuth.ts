@@ -32,12 +32,6 @@ class SpotifyAuthService {
   private generateCodeVerifier(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
-    console.log(
-      btoa(String.fromCharCode(...array))
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-        .replace(/=/g, "")
-    );
     return btoa(String.fromCharCode(...array))
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
@@ -112,6 +106,7 @@ class SpotifyAuthService {
 
       // Clean up
       localStorage.removeItem("spotify_code_verifier");
+      this.codeVerifier = null;
 
       return true;
     } catch (error) {
@@ -216,7 +211,7 @@ class SpotifyAuthService {
    */
   logout(): void {
     localStorage.removeItem(this.STORAGE_KEY);
-    sessionStorage.removeItem("spotify_code_verifier");
+    localStorage.removeItem("spotify_code_verifier");
   }
 }
 
