@@ -17,13 +17,13 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [showCallback, setShowCallback] = useState(false);
-  
+
   // App state
   const [energyFilter, setEnergyFilter] = useState<string>("all");
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoadingSongs, setIsLoadingSongs] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  
+
   const { playbackState, playSong, pauseSong, setVolume, seekTo } =
     useAudioPlayer();
 
@@ -32,7 +32,7 @@ function App() {
     const checkAuth = async () => {
       try {
         // Check if we're on the callback route
-        if (window.location.pathname === '/callback') {
+        if (window.location.pathname === "/callback") {
           setShowCallback(true);
           setIsLoading(false);
           return;
@@ -40,13 +40,13 @@ function App() {
 
         const authenticated = spotifyAuth.isAuthenticated();
         setIsAuthenticated(authenticated);
-        
+
         if (authenticated) {
           await loadUserData();
           await loadUserTopTracks();
         }
       } catch (error) {
-        console.error('Error checking authentication:', error);
+        console.error("Error checking authentication:", error);
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
@@ -67,7 +67,7 @@ function App() {
         profileImage: userData.images?.[0]?.url,
       });
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error("Error loading user data:", error);
     }
   };
 
@@ -78,7 +78,7 @@ function App() {
       const tracks = await spotifyApi.getUserTopTracks(50);
       setSongs(tracks);
     } catch (error) {
-      console.error('Error loading top tracks:', error);
+      console.error("Error loading top tracks:", error);
       // Fallback to empty array if API fails
       setSongs([]);
     } finally {
@@ -94,7 +94,7 @@ function App() {
       const tracks = await spotifyApi.searchTracks(query, 50);
       setSongs(tracks);
     } catch (error) {
-      console.error('Error searching tracks:', error);
+      console.error("Error searching tracks:", error);
       setSongs([]);
     } finally {
       setIsLoadingSongs(false);
@@ -181,11 +181,13 @@ function App() {
           onClear={handleClearSearch}
           isLoading={isLoadingSongs}
         />
-        
+
         {searchQuery && (
           <div className="mt-4 text-center">
             <p className="text-gray-400 text-sm">
-              {isLoadingSongs ? 'Searching...' : `Showing results for "${searchQuery}"`}
+              {isLoadingSongs
+                ? "Searching..."
+                : `Showing results for "${searchQuery}"`}
             </p>
           </div>
         )}
@@ -203,12 +205,13 @@ function App() {
         <div className="container mx-auto px-4 py-12 text-center">
           <div className="max-w-md mx-auto">
             <div className="text-6xl mb-4">🎵</div>
-            <h3 className="text-xl font-bold text-white mb-2">No tracks found</h3>
+            <h3 className="text-xl font-bold text-white mb-2">
+              No tracks found
+            </h3>
             <p className="text-gray-400">
-              {searchQuery 
+              {searchQuery
                 ? `No results found for "${searchQuery}". Try a different search term.`
-                : "We couldn't load your music. Try refreshing the page or searching for tracks."
-              }
+                : "We couldn't load your music. Try refreshing the page or searching for tracks."}
             </p>
           </div>
         </div>

@@ -1,19 +1,19 @@
 /**
  * Login Screen Component
- * 
+ *
  * This component displays the login interface and handles Spotify authentication.
  * It includes helpful setup instructions for developers.
  */
 
-import React, { useState } from 'react';
-import { Music, ExternalLink, Settings, AlertCircle } from 'lucide-react';
-import { spotifyAuth } from '../services/spotifyAuth';
-import { validateSpotifyConfig } from '../config/spotify';
+import React, { useState } from "react";
+import { Music, ExternalLink, Settings, AlertCircle } from "lucide-react";
+import { spotifyAuth } from "../services/spotifyAuth";
+import { validateSpotifyConfig } from "../config/spotify";
 
 export const LoginScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSetupHelp, setShowSetupHelp] = useState(false);
-  
+
   const isConfigValid = validateSpotifyConfig();
 
   const handleLogin = async () => {
@@ -26,7 +26,7 @@ export const LoginScreen: React.FC = () => {
     try {
       await spotifyAuth.initiateAuth();
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       setIsLoading(false);
     }
   };
@@ -55,7 +55,8 @@ export const LoginScreen: React.FC = () => {
                 <span className="font-medium">Setup Required</span>
               </div>
               <p className="text-sm text-red-300">
-                Spotify API credentials are missing. Please check your .env file.
+                Spotify API credentials are missing. Please check your .env
+                file.
               </p>
             </div>
           )}
@@ -92,32 +93,68 @@ export const LoginScreen: React.FC = () => {
         {/* Setup Help Card */}
         {showSetupHelp && (
           <div className="mt-4 bg-card-bg border border-gray-700 rounded-2xl p-6 animate-fade-in">
-            <h3 className="text-lg font-semibold text-white mb-4">Setup Instructions</h3>
-            
+            <h3 className="text-lg font-semibold text-white mb-4">
+              Setup Instructions
+            </h3>
+
             <div className="space-y-4 text-sm text-gray-300">
               <div>
-                <h4 className="font-medium text-white mb-2">1. Create Spotify App</h4>
-                <p>Visit the <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener noreferrer" className="text-spotify-green hover:underline">Spotify Developer Dashboard</a> and create a new app.</p>
+                <h4 className="font-medium text-white mb-2">
+                  1. Create Spotify App
+                </h4>
+                <p>
+                  Visit the{" "}
+                  <a
+                    href="https://developer.spotify.com/dashboard"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-spotify-green hover:underline"
+                  >
+                    Spotify Developer Dashboard
+                  </a>{" "}
+                  and create a new app.
+                </p>
               </div>
-              
+
               <div>
-                <h4 className="font-medium text-white mb-2">2. Configure Redirect URI</h4>
-                <p>Add <code className="bg-gray-800 px-2 py-1 rounded">http://localhost:5173/callback</code> to your app's redirect URIs.</p>
+                <h4 className="font-medium text-white mb-2">
+                  2. Configure Redirect URI
+                </h4>
+                <p>
+                  Add{" "}
+                  <code className="bg-gray-800 px-2 py-1 rounded">
+                    http://localhost:5173/callback
+                  </code>{" "}
+                  to your app's redirect URIs.
+                </p>
               </div>
-              
+
               <div>
-                <h4 className="font-medium text-white mb-2">3. Update Environment Variables</h4>
-                <p>Copy your Client ID and Client Secret to the <code className="bg-gray-800 px-2 py-1 rounded">.env</code> file:</p>
+                <h4 className="font-medium text-white mb-2">
+                  3. Update Environment Variables
+                </h4>
+                <p>
+                  Copy your Client ID and Client Secret to the{" "}
+                  <code className="bg-gray-800 px-2 py-1 rounded">.env</code>{" "}
+                  file:
+                </p>
                 <div className="mt-2 bg-gray-800 p-3 rounded text-xs font-mono">
                   <div>VITE_SPOTIFY_CLIENT_ID=your_client_id</div>
                   <div>VITE_SPOTIFY_CLIENT_SECRET=your_client_secret</div>
-                  <div>VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/callback</div>
+                  <div>
+                    VITE_SPOTIFY_REDIRECT_URI=http://localhost:5173/callback
+                  </div>
                 </div>
               </div>
-              
+
               <div>
-                <h4 className="font-medium text-white mb-2">4. Restart Development Server</h4>
-                <p>After updating the .env file, restart your development server for changes to take effect.</p>
+                <h4 className="font-medium text-white mb-2">
+                  4. Restart Development Server
+                </h4>
+                <p>
+                  After updating the .env file, restart your development server
+                  for changes to take effect.
+                </p>
               </div>
             </div>
           </div>

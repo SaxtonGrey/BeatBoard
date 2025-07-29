@@ -1,11 +1,11 @@
 /**
  * Spotify Authentication Service
- * 
+ *
  * Handles OAuth 2.0 Authorization Code Flow with PKCE for secure authentication.
  * This service manages token storage, refresh, and validation.
  */
 
-import { SPOTIFY_CONFIG } from '../config/spotify';
+import { SPOTIFY_CONFIG } from "../config/spotify";
 
 interface TokenResponse {
   access_token: string;
@@ -23,7 +23,7 @@ interface StoredTokens {
 }
 
 class SpotifyAuthService {
-  private readonly STORAGE_KEY = 'spotify_tokens';
+  private readonly STORAGE_KEY = "spotify_tokens";
   private codeVerifier: string | null = null;
 
   /**
@@ -32,10 +32,16 @@ class SpotifyAuthService {
   private generateCodeVerifier(): string {
     const array = new Uint8Array(32);
     crypto.getRandomValues(array);
+    console.log(
+      btoa(String.fromCharCode(...array))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=/g, "")
+    );
     return btoa(String.fromCharCode(...array))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
   }
 
   /**
@@ -44,11 +50,11 @@ class SpotifyAuthService {
   private async generateCodeChallenge(verifier: string): Promise<string> {
     const encoder = new TextEncoder();
     const data = encoder.encode(verifier);
-    const digest = await crypto.subtle.digest('SHA-256', data);
+    const digest = await crypto.subtle.digest("SHA-256", data);
     return btoa(String.fromCharCode(...new Uint8Array(digest)))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
   }
 
   /**
@@ -57,20 +63,19 @@ class SpotifyAuthService {
   async initiateAuth(): Promise<void> {
     this.codeVerifier = this.generateCodeVerifier();
     const codeChallenge = await this.generateCodeChallenge(this.codeVerifier);
-    
+
     // Store code verifier for later use
-    sessionStorage.setItem('spotify_code_verifier', this.codeVerifier);
+    localStorage.setItem("spotify_code_verifier", this.codeVerifier);
 
     const params = new URLSearchParams({
       client_id: SPOTIFY_CONFIG.CLIENT_ID,
-      response_type: 'code',
+      response_type: "code",
       redirect_uri: SPOTIFY_CONFIG.REDIRECT_URI,
-      code_challenge_method: 'S256',
+      code_challenge_method: "S256",
       code_challenge: codeChallenge,
       scope: SPOTIFY_CONFIG.SCOPES,
-      show_dialog: 'true'
+      show_dialog: "true",
     });
-
     window.location.href = `${SPOTIFY_CONFIG.AUTH_URL}?${params.toString()}`;
   }
 
@@ -79,19 +84,19 @@ class SpotifyAuthService {
    */
   async handleCallback(code: string): Promise<boolean> {
     try {
-      const codeVerifier = sessionStorage.getItem('spotify_code_verifier');
+      const codeVerifier = localStorage.getItem("spotify_code_verifier");
       if (!codeVerifier) {
-        throw new Error('Code verifier not found');
+        throw new Error("Code verifier not found");
       }
 
       const response = await fetch(SPOTIFY_CONFIG.TOKEN_URL, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
           client_id: SPOTIFY_CONFIG.CLIENT_ID,
-          grant_type: 'authorization_code',
+          grant_type: "authorization_code",
           code,
           redirect_uri: SPOTIFY_CONFIG.REDIRECT_URI,
           code_verifier: codeVerifier,
@@ -104,13 +109,13 @@ class SpotifyAuthService {
 
       const tokens: TokenResponse = await response.json();
       this.storeTokens(tokens);
-      
+
       // Clean up
-      sessionStorage.removeItem('spotify_code_verifier');
-      
+      localStorage.removeItem("spotify_code_verifier");
+
       return true;
     } catch (error) {
-      console.error('Error handling OAuth callback:', error);
+      console.error("Error handling OAuth callback:", error);
       return false;
     }
   }
@@ -122,7 +127,7 @@ class SpotifyAuthService {
     const storedTokens: StoredTokens = {
       accessToken: tokens.access_token,
       refreshToken: tokens.refresh_token,
-      expiresAt: Date.now() + (tokens.expires_in * 1000),
+      expiresAt: Date.now() + tokens.expires_in * 1000,
       scope: tokens.scope,
     };
 
@@ -172,22 +177,24 @@ class SpotifyAuthService {
   /**
    * Refresh access token using refresh token
    */
-  private async refreshAccessToken(refreshToken: string): Promise<string | null> {
+  private async refreshAccessToken(
+    refreshToken: string
+  ): Promise<string | null> {
     try {
       const response = await fetch(SPOTIFY_CONFIG.TOKEN_URL, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({
           client_id: SPOTIFY_CONFIG.CLIENT_ID,
-          grant_type: 'refresh_token',
+          grant_type: "refresh_token",
           refresh_token: refreshToken,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Token refresh failed');
+        throw new Error("Token refresh failed");
       }
 
       const tokens: TokenResponse = await response.json();
@@ -198,7 +205,7 @@ class SpotifyAuthService {
 
       return tokens.access_token;
     } catch (error) {
-      console.error('Error refreshing token:', error);
+      console.error("Error refreshing token:", error);
       this.logout();
       return null;
     }
@@ -209,7 +216,7 @@ class SpotifyAuthService {
    */
   logout(): void {
     localStorage.removeItem(this.STORAGE_KEY);
-    sessionStorage.removeItem('spotify_code_verifier');
+    sessionStorage.removeItem("spotify_code_verifier");
   }
 }
 
