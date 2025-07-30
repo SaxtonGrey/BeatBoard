@@ -1,5 +1,5 @@
 import React from "react";
-import { Play, Pause, AlertCircle, ExternalLink } from "lucide-react";
+import { Play, Pause, ExternalLink } from "lucide-react";
 import type { Song } from "../types/music";
 
 interface MusicCardProps {
@@ -93,8 +93,6 @@ export const MusicCard: React.FC<MusicCardProps> = ({
           />
         </div>
 
-        {/* No Preview Indicator */}
-
         {/* Spotify Link Button */}
         {song.spotifyUrl && (
           <button
@@ -117,7 +115,7 @@ export const MusicCard: React.FC<MusicCardProps> = ({
         </p>
         <div className="flex justify-between items-center text-sm text-gray-500">
           <span className="bg-gray-700/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium">
-            {song.genre}
+            {song.energy.charAt(0).toUpperCase() + song.energy.slice(1)} Energy
           </span>
           <span className="font-mono text-xs">
             {Math.floor(song.duration / 60)}:

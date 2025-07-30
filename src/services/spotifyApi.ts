@@ -25,19 +25,6 @@ interface SpotifyTrack {
   uri: string;
 }
 
-interface SpotifyPlaylist {
-  id: string;
-  name: string;
-  description: string;
-  images: Array<{ url: string }>;
-  tracks: {
-    total: number;
-    items: Array<{
-      track: SpotifyTrack;
-    }>;
-  };
-}
-
 interface SpotifySearchResponse {
   tracks: {
     items: SpotifyTrack[];
@@ -53,9 +40,6 @@ interface AudioFeatures {
 }
 
 class SpotifyApiService {
-  /**
-   * Make authenticated request to Spotify API
-   */
   private async makeRequest<T>(
     endpoint: string,
     options: RequestInit = {}
@@ -77,27 +61,25 @@ class SpotifyApiService {
 
     if (!response.ok) {
       if (response.status === 401) {
-        // Token expired, try to refresh
         spotifyAuth.logout();
         throw new Error("Authentication expired");
       }
-      throw new Error(`API request failed: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`API request failed: ${errorData.error?.message || response.statusText}`);
     }
 
     return response.json();
   }
 
-  /**
-   * Get user's top tracks
-   */
-  async getUserTopTracks(
-    limit: number = 20,
-    timeRange: "short_term" | "medium_term" | "long_term" = "medium_term"
-  ): Promise<Song[]> {
+  async getUserTopTracks(limit: number = 50): Promise<Song[]> {
     try {
       const response = await this.makeRequest<{ items: SpotifyTrack[] }>(
-        `/me/top/tracks?limit=${limit}&time_range=${timeRange}`
+        `/me/top/tracks?limit=${limit}&time_range=medium_term`
       );
+
+      if (!response.items || response.items.length === 0) {
+        return [];
+      }
 
       // Get audio features for energy classification
       const trackIds = response.items.map((track) => track.id).join(",");
@@ -115,10 +97,16 @@ class SpotifyApiService {
   private async getAudioFeatures(trackIds: string): Promise<AudioFeatures[]> {
     try {
       const response = await this.makeRequest<{
-        audio_features: AudioFeatures[];
+        audio_features: (AudioFeatures | null)[];
       }>(`/audio-features?ids=${trackIds}`);
-      console.log(response.audio_features || "no audio features found");
-      return response.audio_features || [];
+      
+      // Filter out null values and provide defaults
+      return response.audio_features.map(features => features || {
+        energy: 0.5,
+        valence: 0.5,
+        danceability: 0.5,
+        acousticness: 0.5,
+      });
     } catch (error) {
       console.error("Error fetching audio features:", error);
       // Return default features if API call fails
@@ -130,15 +118,17 @@ class SpotifyApiService {
       }));
     }
   }
-  /**
-   * Search for tracks
-   */
+
   async searchTracks(query: string, limit: number = 20): Promise<Song[]> {
     try {
       const encodedQuery = encodeURIComponent(query);
       const response = await this.makeRequest<SpotifySearchResponse>(
         `/search?q=${encodedQuery}&type=track&limit=${limit}`
       );
+
+      if (!response.tracks.items || response.tracks.items.length === 0) {
+        return [];
+      }
 
       // Get audio features for energy classification
       const trackIds = response.tracks.items.map((track) => track.id).join(",");
@@ -153,26 +143,11 @@ class SpotifyApiService {
     }
   }
 
-  /**
-   * Get user's playlists
-   */
-  async getUserPlaylists(limit: number = 20): Promise<SpotifyPlaylist[]> {
-    try {
-      const response = await this.makeRequest<{ items: SpotifyPlaylist[] }>(
-        `/me/playlists?limit=${limit}`
-      );
-      return response.items;
-    } catch (error) {
-      console.error("Error fetching user playlists:", error);
-      throw error;
-    }
-  }
-
   private convertSpotifyTrackToSong(
     track: SpotifyTrack,
     audioFeatures?: AudioFeatures
   ): Song {
-    // Determine energy level based on audio features
+    // Determine energy level based on danceability
     let energy: "low" | "medium" | "high" = "medium";
     if (audioFeatures) {
       if (audioFeatures.danceability > 0.7) energy = "high";
@@ -199,17 +174,15 @@ class SpotifyApiService {
       album: track.album.name,
       albumArt,
       duration: Math.floor(track.duration_ms / 1000),
-      genre: "Unknown", // Spotify doesn't provide genre in track objects
+      genre: "Unknown",
       energy,
       color: colors[energy],
       spotifyUrl: track.external_urls.spotify,
       uri: track.uri,
+      danceability: audioFeatures?.danceability || 0.5,
     };
   }
 
-  /**
-   * Get current user profile
-   */
   async getCurrentUser() {
     try {
       return await this.makeRequest<{

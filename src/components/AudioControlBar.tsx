@@ -1,10 +1,10 @@
 import React from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
-import type { PlaybackState, Song } from "../types/music";
+import type { PlaybackState } from "../types/music";
 
 interface AudioControlBarProps {
   playbackState: PlaybackState;
-  onPlay: (song: Song) => void;
+  onPlay: (song: any) => void;
   onPause: () => void;
   onVolumeChange: (volume: number) => void;
   onSeek: (time: number) => void;

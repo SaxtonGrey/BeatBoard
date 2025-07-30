@@ -7,15 +7,17 @@ export interface Song {
   duration: number;
   genre: string;
   energy: "low" | "medium" | "high";
-  color: string; // Dominant color from album art
-  spotifyUrl?: string; // Link to Spotify track
+  color: string;
+  spotifyUrl?: string;
   uri: string;
+  danceability: number;
 }
 
 export interface PlaybackState {
   isPlaying: boolean;
   currentSong: Song | null;
-  currentTime: number;
+  position: number;
+  duration: number;
   volume: number;
 }
 
@@ -24,4 +26,23 @@ export interface User {
   displayName: string;
   email: string;
   profileImage?: string;
+}
+
+export interface SpotifyPlayerState {
+  device_id: string;
+  position: number;
+  duration: number;
+  paused: boolean;
+  track_window: {
+    current_track: {
+      id: string;
+      name: string;
+      artists: Array<{ name: string }>;
+      album: {
+        name: string;
+        images: Array<{ url: string }>;
+      };
+      uri: string;
+    };
+  };
 }
