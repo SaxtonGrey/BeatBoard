@@ -6,7 +6,37 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { spotifyAuth } from '../services/spotifyAuth';
-import type { Song, SpotifyPlayerState, SpotifyPlayer } from '../types/music';
+import type { Song, SpotifyPlayerState } from '../types/music';
+
+declare global {
+  interface Window {
+    onSpotifyWebPlaybackSDKReady: () => void;
+    Spotify: {
+      Player: new (options: {
+        name: string;
+        getOAuthToken: (cb: (token: string) => void) => void;
+        volume: number;
+      }) => SpotifyPlayer;
+    };
+  }
+}
+
+interface SpotifyPlayer {
+  addListener: (event: string, callback: (data: any) => void) => void;
+  removeListener: (event: string, callback?: (data: any) => void) => void;
+  connect: () => Promise<boolean>;
+  disconnect: () => void;
+  getCurrentState: () => Promise<SpotifyPlayerState | null>;
+  setName: (name: string) => Promise<void>;
+  getVolume: () => Promise<number>;
+  setVolume: (volume: number) => Promise<void>;
+  pause: () => Promise<void>;
+  resume: () => Promise<void>;
+  togglePlay: () => Promise<void>;
+  seek: (position: number) => Promise<void>;
+  previousTrack: () => Promise<void>;
+  nextTrack: () => Promise<void>;
+}
 
 interface SpotifyPlayerProps {
   onPlayerStateChange: (state: SpotifyPlayerState | null) => void;
@@ -14,7 +44,7 @@ interface SpotifyPlayerProps {
   onPlayerError: (error: string) => void;
 }
 
-export const SpotifyPlayerComponent: React.FC<SpotifyPlayerProps> = ({
+export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
   onPlayerStateChange,
   onPlayerReady,
   onPlayerError,
@@ -122,10 +152,50 @@ export const SpotifyPlayerComponent: React.FC<SpotifyPlayerProps> = ({
     }
   };
 
+  const playTrack = async (uri: string, deviceId: string) => {
+    try {
+      const token = await spotifyAuth.getAccessToken();
+      if (!token) throw new Error('No access token');
+
+      const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          uris: [uri],
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to play track: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Error playing track:', error);
+      onPlayerError(`Failed to play track: ${error}`);
+    }
+  };
+
+  // Expose player methods
+  React.useImperativeHandle(playerRef, () => ({
+    play: (song: Song) => {
+      if (deviceId) {
+        playTrack(song.uri, deviceId);
+      }
+    },
+    pause: () => playerRef.current?.pause(),
+    resume: () => playerRef.current?.resume(),
+    seek: (position: number) => playerRef.current?.seek(position),
+    setVolume: (volume: number) => playerRef.current?.setVolume(volume),
+    getCurrentState: () => playerRef.current?.getCurrentState(),
+  }));
+
   return null; // This component doesn't render anything
 };
 
 export const useSpotifyPlayer = () => {
+  const playerRef = useRef<any>(null);
   const [playerState, setPlayerState] = useState<SpotifyPlayerState | null>(null);
   const [deviceId, setDeviceId] = useState<string>('');
   const [isReady, setIsReady] = useState(false);
@@ -174,69 +244,20 @@ export const useSpotifyPlayer = () => {
     }
   };
 
-  const pauseTrack = async () => {
-    try {
-      const token = await spotifyAuth.getAccessToken();
-      if (!token) throw new Error('No access token');
-
-      await fetch(`https://api.spotify.com/v1/me/player/pause?device_id=${deviceId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-    } catch (error) {
-      console.error('Error pausing track:', error);
-    }
+  const pauseTrack = () => {
+    playerRef.current?.pause();
   };
 
-  const resumeTrack = async () => {
-    try {
-      const token = await spotifyAuth.getAccessToken();
-      if (!token) throw new Error('No access token');
-
-      await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-    } catch (error) {
-      console.error('Error resuming track:', error);
-    }
+  const resumeTrack = () => {
+    playerRef.current?.resume();
   };
 
-  const seekTo = async (position: number) => {
-    try {
-      const token = await spotifyAuth.getAccessToken();
-      if (!token) throw new Error('No access token');
-
-      await fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${position}&device_id=${deviceId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-    } catch (error) {
-      console.error('Error seeking:', error);
-    }
+  const seekTo = (position: number) => {
+    playerRef.current?.seek(position);
   };
 
-  const setVolume = async (volume: number) => {
-    try {
-      const token = await spotifyAuth.getAccessToken();
-      if (!token) throw new Error('No access token');
-
-      const volumePercent = Math.round(volume * 100);
-      await fetch(`https://api.spotify.com/v1/me/player/volume?volume_percent=${volumePercent}&device_id=${deviceId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-    } catch (error) {
-      console.error('Error setting volume:', error);
-    }
+  const setVolume = (volume: number) => {
+    playerRef.current?.setVolume(volume);
   };
 
   return {
@@ -250,7 +271,8 @@ export const useSpotifyPlayer = () => {
     seekTo,
     setVolume,
     PlayerComponent: () => (
-      <SpotifyPlayerComponent
+      <SpotifyPlayer
+        ref={playerRef}
         onPlayerStateChange={handlePlayerStateChange}
         onPlayerReady={handlePlayerReady}
         onPlayerError={handlePlayerError}

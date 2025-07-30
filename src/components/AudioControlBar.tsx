@@ -29,7 +29,7 @@ export const AudioControlBar: React.FC<AudioControlBarProps> = ({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const progressPercentage = currentSong.duration > 0 ? (currentTime / currentSong.duration) * 100 : 0;
+  const progressPercentage = (currentTime / currentSong.duration) * 100;
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();

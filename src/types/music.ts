@@ -16,7 +16,8 @@ export interface Song {
 export interface PlaybackState {
   isPlaying: boolean;
   currentSong: Song | null;
-  currentTime: number;
+  position: number;
+  duration: number;
   volume: number;
 }
 
@@ -44,34 +45,4 @@ export interface SpotifyPlayerState {
       uri: string;
     };
   };
-}
-
-export interface SpotifyPlayer {
-  addListener: (event: string, callback: (data: any) => void) => void;
-  removeListener: (event: string, callback?: (data: any) => void) => void;
-  connect: () => Promise<boolean>;
-  disconnect: () => void;
-  getCurrentState: () => Promise<SpotifyPlayerState | null>;
-  setName: (name: string) => Promise<void>;
-  getVolume: () => Promise<number>;
-  setVolume: (volume: number) => Promise<void>;
-  pause: () => Promise<void>;
-  resume: () => Promise<void>;
-  togglePlay: () => Promise<void>;
-  seek: (position: number) => Promise<void>;
-  previousTrack: () => Promise<void>;
-  nextTrack: () => Promise<void>;
-}
-
-declare global {
-  interface Window {
-    onSpotifyWebPlaybackSDKReady: () => void;
-    Spotify: {
-      Player: new (options: {
-        name: string;
-        getOAuthToken: (cb: (token: string) => void) => void;
-        volume: number;
-      }) => SpotifyPlayer;
-    };
-  }
 }

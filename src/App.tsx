@@ -8,7 +8,6 @@ import { LoadingSpinner } from "./components/LoadingSpinner";
 import { SearchBar } from "./components/SearchBar";
 import { useAppState } from "./hooks/useAppState";
 import { useSpotifyPlayer } from "./components/SpotifyPlayer";
-import type { Song } from "./types/music";
 
 function App() {
   const {
@@ -63,7 +62,7 @@ function App() {
     return <LoginScreen />;
   }
 
-  const handleSongPlay = (song: Song) => {
+  const handleSongPlay = (song: any) => {
     if (!isPlayerReady) {
       alert("Spotify player is not ready yet. Please wait a moment and try again.");
       return;
@@ -81,8 +80,7 @@ function App() {
     }
   };
 
-  // Create current song object from player state
-  const currentSong: Song | null = playerState?.track_window.current_track ? {
+  const currentSong = playerState?.track_window.current_track ? {
     id: playerState.track_window.current_track.id,
     title: playerState.track_window.current_track.name,
     artist: playerState.track_window.current_track.artists.map(a => a.name).join(", "),
@@ -90,10 +88,6 @@ function App() {
     albumArt: playerState.track_window.current_track.album.images[0]?.url || "",
     duration: Math.floor((playerState.duration || 0) / 1000),
     uri: playerState.track_window.current_track.uri,
-    genre: "Unknown",
-    energy: "medium",
-    color: "#1DB954",
-    danceability: 0.5,
   } : null;
 
   const playbackStateForUI = {
